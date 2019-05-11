@@ -2,123 +2,131 @@
 #include <string>
 #include <vector>
 
-class Person
+// Poliformizam radi samo na heapu!
+
+// Zadatak:
+// Napraviti interface Shape koji ima metode Area i Perimeter
+// Napraviti klase Triangle, Circle, Square koji implementiraju Shape:
+// Napraviti objekte svake podklase i ispisati Area i Perimeter!
+
+class IShape
 {
 public:
-	Person(std::string name, std::string lastName, std::string address)
-	{
-		_name = name;
-		_lastName = lastName;
-		_address = address;
-	}
-	bool trySetSSN(std::string ssn)
-	{
-		if (_socialSecurityNumber != "")
-		{
-			std::cout << "Social Security Number is already set!" << std::endl;
-			std::cout << "Persons SSN cannot be changed!" << std::endl;
-			return true;
-		}
-		if (ssn.size() != 11)
-		{
-			std::cout << "Social Security Number is invalid! Wrong number of characters!" << std::endl;
-			return false;
-		}
 
-		for (size_t i = 0; i < ssn.size(); i++)
-		{
-			char current = ssn[i];
-			if (current < 48 || current > 57)
-			{
-				std::cout << "Social Security Number is invalid!" << std::endl;
-				std::cout << "Character at index " << i << " is invalid" << std::endl;
-				return false;
-			}
-		}
-
-		_socialSecurityNumber = ssn;
-		return true;
-	}
-
-	void print()
-	{
-		std::cout << "Name: " << _name << " " << _lastName << std::endl;
-		std::cout << "Address: " << _address  << std::endl;
-		std::cout << "Social Security Number: " << _socialSecurityNumber << std::endl;
-	}
-
-private:
-	std::string _name, _lastName, _address, _socialSecurityNumber;
+	virtual double getArea() = 0;
+	virtual double getPerimeter() = 0;
+	virtual std::string getName() = 0;
 };
 
-void displayPersons(std::vector<Person> persons)
+class Triangle : public IShape
 {
-	for (size_t i = 0; i < persons.size(); i++)
+public:
+	Triangle(double x, double y, double z)
 	{
-		persons[i].print();
+		a = x;
+		b = y;
+		c = z;
 	}
-}
+	double a, b, c, area, perimeter;
+	std::string name = "triangle";
 
-void inputNewData(std::string message, std::string& data)
-{
-	std::cout << message << std::endl;
-	std::cin >> data;
-	std::cin.clear();
-	std::cin.ignore(1000, '\n');
-}
-
-void createPerson(std::vector<Person>& persons)
-{
-	std::string name, lastName, address;
-	inputNewData("Enter new persons name: ", name);
-	inputNewData("Enter new persons lastname: ", lastName);
-	inputNewData("Enter new persons address: ", address);
-
-	Person person = Person(name, lastName, address);
-	
-	while (true)
+	std::string getName()
 	{
-		std::string ssn;
-		inputNewData("Enter new social security number: ", ssn);
-
-		if (person.trySetSSN(ssn))
-		{
-			persons.push_back(person);
-			return;
-		}
+		return name;
 	}
+	double getArea()
+	{
+		double s = (a + b + c) / 2;
+		area = sqrt((s - a)*(s - b)*(s - c));
+		return area;
+	}
+	double getPerimeter()
+	{
+		perimeter = a + b + c;
+		return perimeter;
+	}
+};
+
+class Circle : public IShape
+{
+public:
+	Circle(double rad)
+	{
+		r = rad;
+	}
+	double r, area, perimeter;
+	std::string name = "circle";
+
+	std::string getName()
+	{
+		return name;
+	}
+	double getArea()
+	{
+		area = r * r*_Pi;
+		return area;
+	}
+	double getPerimeter()
+	{
+		perimeter = 2 * r*_Pi;
+		return perimeter;
+	}
+private:
+	float _Pi = 3.14;
+};
+
+class Square : public IShape
+{
+public:
+	Square(double x)
+	{
+		a = x;
+	}
+	double a, area, perimeter;
+	std::string name = "square";
+
+	std::string getName()
+	{
+		return name;
+	}
+	double getArea()
+	{
+		area = a * a;
+		return area;
+	}
+	double getPerimeter()
+	{
+		perimeter = 4 * a;
+		return perimeter;
+	}
+};
+
+void printShapeInfo(IShape* shape)
+{
+	std::cout << "Shape name: " << shape->getName() << std::endl;
+	std::cout << shape->getName() << " perimeter is: " << shape->getPerimeter() << std::endl;
+	std::cout << shape->getName() << " area is: " << shape->getArea() << std::endl;
+	std::cout << "=======================================" << std::endl;
 }
 
 int main()
 {
+	Triangle* triangleShape = new Triangle(2, 2, 2);
+	Square* squareShape = new Square(1);
+	Circle* circleShape = new Circle(4);
 
-	std::vector<Person> persons;
+	std::vector<IShape*> shapes;
+	shapes.push_back(triangleShape);
+	shapes.push_back(squareShape);
+	shapes.push_back(circleShape);
 
-	bool valid = true;
-	while (valid)
+	for (IShape* it : shapes)
 	{
-		std::cout << "What do you want to do: " << std::endl;
-		std::cout << "1 - Add new person" << std::endl;
-		std::cout << "2 - Exit" << std::endl;
-
-		int choice;
-		std::cin >> choice;
-		std::cin.clear();
-		std::cin.ignore(1000, '\n');
-
-		switch (choice)
-		{
-		case 1:
-			createPerson(persons);
-			break;
-		case 2:
-			valid = false;
-			break;
-		default:
-			break;
-		}
+		printShapeInfo(it);
 	}
-	displayPersons(persons);
 
 	std::cin.get();
+	delete triangleShape;
+	delete squareShape;
+	delete circleShape;
 }
